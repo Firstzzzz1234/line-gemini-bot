@@ -7,7 +7,7 @@ from linebot.v3 import WebhookHandler
 app = Flask(__name__)
 
 import os
-
+print("USER ID =", event.source.user_id)
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
