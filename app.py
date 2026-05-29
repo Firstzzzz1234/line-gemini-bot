@@ -7,10 +7,13 @@ from linebot.v3 import WebhookHandler
 app = Flask(__name__)
 
 import os
-print("USER ID =", event.source.user_id)
+
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+OWNER_ID = "ใส่ User ID ของคุณตรงนี้"
+
 print("Gemini Key Loaded:", GEMINI_API_KEY[:10] if GEMINI_API_KEY else "NONE")
 genai.configure(api_key=GEMINI_API_KEY)
 
@@ -27,6 +30,14 @@ def webhook():
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
+
+    print("USER ID =", event.source.user_id)
+
+    text = event.message.text
+
+    if event.source.user_id != OWNER_ID:
+        return
+
     text = event.message.text
 
     if not text.startswith("@AI"):
