@@ -34,7 +34,7 @@ def handle_message(event):
 
     prompt = text[3:].strip()
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
 
     with ApiClient(configuration) as api_client:
