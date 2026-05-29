@@ -8,9 +8,9 @@ app = Flask(__name__)
 
 import os
 
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv("tPgzxYVdx/cmxC3Oo3E3eibNqBi6DnPTbXmlcnzMR7fH83HNfmSItd672Gw4bmkj/JpdP0jEdElQGtmHQ1q5NE02fyWlXMaosEwOJUWif1RyH3ZLQd4ij3cFi47SM+tC0i3ZUEKPKq5c1iukLQ+VwAdB04t89/1O/w1cDnyilFU=")
-LINE_CHANNEL_SECRET = os.getenv("17d7bc70c1a4140d10ba432638509fb8")
-GEMINI_API_KEY = os.getenv("AQ.Ab8RN6JlbyzY28UBeGSXtWqgnxK5tIxplApS-724IkwrnmpZnw")
+LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
