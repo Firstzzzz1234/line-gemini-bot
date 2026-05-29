@@ -11,7 +11,7 @@ import os
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
+print("Gemini Key Loaded:", GEMINI_API_KEY[:10] if GEMINI_API_KEY else "NONE")
 genai.configure(api_key=GEMINI_API_KEY)
 
 configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
