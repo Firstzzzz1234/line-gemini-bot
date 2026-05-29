@@ -12,7 +12,7 @@ LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-OWNER_ID = "ใส่ User ID ของคุณตรงนี้"
+OWNER_ID = "U8ef199c624323ece6fb023faca74d59f"
 
 print("Gemini Key Loaded:", GEMINI_API_KEY[:10] if GEMINI_API_KEY else "NONE")
 genai.configure(api_key=GEMINI_API_KEY)
