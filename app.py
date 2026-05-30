@@ -14,7 +14,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 OWNER_ID = "U8ef199c624323ece6fb023faca74d59f"
 
-ALLOWED_GROUP_ID = "ใส่ group id ตรงนี้"
+ALLOWED_GROUP_ID = "Cc8cda1772dbd378254a51f4371c5985d"
 
 print("Gemini Key Loaded:", GEMINI_API_KEY[:10] if GEMINI_API_KEY else "NONE")
 genai.configure(api_key=GEMINI_API_KEY)
