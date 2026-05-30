@@ -14,6 +14,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 OWNER_ID = "U8ef199c624323ece6fb023faca74d59f"
 
+ALLOWED_GROUP_ID = "ใส่ group id ตรงนี้"
+
 print("Gemini Key Loaded:", GEMINI_API_KEY[:10] if GEMINI_API_KEY else "NONE")
 genai.configure(api_key=GEMINI_API_KEY)
 
@@ -32,6 +34,9 @@ def webhook():
 def handle_message(event):
 
     print("USER ID =", event.source.user_id)
+
+    if hasattr(event.source, "group_id"):
+        print("GROUP ID =", event.source.group_id)
 
     text = event.message.text
 
