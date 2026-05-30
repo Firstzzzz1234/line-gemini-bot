@@ -35,6 +35,9 @@ def handle_message(event):
 
     print("USER ID =", event.source.user_id)
 
+    if event.source.user_id != OWNER_ID:
+        return
+    
     if hasattr(event.source, "group_id"):
         print("GROUP ID =", event.source.group_id)
 
