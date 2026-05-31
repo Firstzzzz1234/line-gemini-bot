@@ -1,4 +1,5 @@
 flask
-gunicorn
 google-generativeai
 line-bot-sdk
+supabase
+gunicorn
