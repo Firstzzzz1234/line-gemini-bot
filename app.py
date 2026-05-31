@@ -147,6 +147,100 @@ def handle_message(event):
 
     user_text = text[3:].strip()
 
+    # จำข้อมูลถาวร
+    if user_text.startswith("จำไว้ว่า"):
+
+        memory = user_text.replace(
+            "จำไว้ว่า",
+            ""
+        ).strip()
+
+        if "=" in memory:
+
+            key, value = memory.split("=", 1)
+
+            supabase.table(
+                "user_profile"
+            ).upsert({
+                "user_id": user_id,
+                "key": key.strip(),
+                "value": value.strip()
+            }).execute()
+
+            send_reply(
+                event.reply_token,
+                f"จำแล้ว: {key.strip()}"
+            )
+
+            return
+
+            send_reply(
+                event.reply_token,
+                "รูปแบบ: @AI จำไว้ว่า ชื่อ=เฟิส"
+            )
+
+            return
+
+    # ดูความจำ
+    if user_text == "จำอะไรเกี่ยวกับฉันบ้าง":
+
+        result = (
+            supabase.table("user_profile")
+            .select("*")
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not result.data:
+
+            send_reply(
+                event.reply_token,
+                "ยังไม่มีข้อมูลที่จำไว้"
+            )
+
+            return
+
+        text_out = ""
+
+        for row in result.data:
+
+            text_out += (
+                f"{row['key']} : "
+                f"{row['value']}\n"
+            )
+
+        send_reply(
+            event.reply_token,
+            text_out
+        )
+
+        return
+
+    # ลืมข้อมูล
+    if user_text.startswith("ลืม"):
+
+        key = user_text.replace(
+            "ลืม",
+            ""
+        ).strip()
+
+        supabase.table(
+            "user_profile"
+        ).delete().eq(
+            "user_id",
+            user_id
+        ).eq(
+            "key",
+            key
+        ).execute()
+
+        send_reply(
+            event.reply_token,
+            f"ลืม {key} แล้ว"
+        )
+
+        return
+    
     # ล้างความจำ
     if user_text == "ล้างความจำ":
 
@@ -176,6 +270,22 @@ def handle_message(event):
 
     memory_text = ""
 
+    profile = (
+        supabase.table("user_profile")
+        .select("*")
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    profile_text = ""
+
+    for row in profile.data:
+
+        profile_text += (
+            f"{row['key']} = "
+            f"{row['value']}\n"
+        )
+        
     for row in history.data:
 
         memory_text += (
@@ -186,16 +296,20 @@ def handle_message(event):
     prompt = f"""
 คุณคือ AI ผู้ช่วยส่วนตัวของเฟิส
 
+ข้อมูลผู้ใช้:
+
+{profile_text}
+
+ประวัติการสนทนา:
+
+{memory_text}
+
 กฎ:
 - ตอบภาษาไทย
 - ตอบสั้น
 - ตรงประเด็น
 - ไม่เกิน 5 บรรทัด
-- จำข้อมูลจากประวัติได้
-
-ประวัติการสนทนา:
-
-{memory_text}
+- ใช้ข้อมูลผู้ใช้และประวัติสนทนาได้
 
 ผู้ใช้:
 {user_text}
