@@ -34,8 +34,6 @@ OWNER_ID = os.getenv(
     "U8ef199c624323ece6fb023faca74d59f"
 )
 
-allowed_groups = "Cc8cda1772dbd378254a51f4371c5985d"
-
 supabase = create_client(
     SUPABASE_URL,
     SUPABASE_KEY
@@ -63,15 +61,36 @@ def webhook():
     return "OK"
 
 
+def send_reply(reply_token, text):
+
+    with ApiClient(configuration) as api_client:
+
+        line_bot_api = MessagingApi(api_client)
+
+        line_bot_api.reply_message(
+            ReplyMessageRequest(
+                reply_token=reply_token,
+                messages=[
+                    TextMessage(text=text[:5000])
+                ]
+            )
+        )
+
+
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
 
     user_id = event.source.user_id
+    text = event.message.text.strip()
 
     print("USER =", user_id)
 
+    # เฉพาะเจ้าของ
     if user_id != OWNER_ID:
         return
+
+    # ตรวจสอบกลุ่ม
+    group_id = None
 
     if hasattr(event.source, "group_id"):
 
@@ -79,38 +98,81 @@ def handle_message(event):
 
         print("GROUP =", group_id)
 
-        if group_id != ALLOWED_GROUP_ID:
+        # อนุญาตกลุ่ม
+        if text == "@AI อนุญาตกลุ่มนี้":
+
+            supabase.table(
+                "allowed_groups"
+            ).upsert({
+                "group_id": group_id
+            }).execute()
+
+            send_reply(
+                event.reply_token,
+                "อนุญาตกลุ่มนี้แล้ว"
+            )
+
             return
 
-    text = event.message.text.strip()
+        # ยกเลิกกลุ่ม
+        if text == "@AI ยกเลิกกลุ่มนี้":
+
+            supabase.table(
+                "allowed_groups"
+            ).delete().eq(
+                "group_id",
+                group_id
+            ).execute()
+
+            send_reply(
+                event.reply_token,
+                "ยกเลิกกลุ่มนี้แล้ว"
+            )
+
+            return
+
+        # ตรวจว่ากลุ่มได้รับอนุญาตหรือยัง
+        allowed = (
+            supabase.table("allowed_groups")
+            .select("*")
+            .eq("group_id", group_id)
+            .execute()
+        )
+
+        if not allowed.data:
+            return
 
     if not text.startswith("@AI"):
         return
 
     user_text = text[3:].strip()
 
+    # ล้างความจำ
     if user_text == "ล้างความจำ":
 
-        supabase.table("chat_memory")\
-            .delete()\
-            .eq("user_id", user_id)\
-            .execute()
-
-        reply_text = "ล้างความจำเรียบร้อย"
+        supabase.table(
+            "chat_memory"
+        ).delete().eq(
+            "user_id",
+            user_id
+        ).execute()
 
         send_reply(
             event.reply_token,
-            reply_text
+            "ล้างความจำเรียบร้อย"
         )
 
         return
 
-    history = supabase.table("chat_memory")\
-        .select("*")\
-        .eq("user_id", user_id)\
-        .order("created_at")\
-        .limit(20)\
+    # โหลดความจำ
+    history = (
+        supabase.table("chat_memory")
+        .select("*")
+        .eq("user_id", user_id)
+        .order("created_at")
+        .limit(15)
         .execute()
+    )
 
     memory_text = ""
 
@@ -122,13 +184,16 @@ def handle_message(event):
         )
 
     prompt = f"""
-คุณคือ AI ผู้ช่วยภาษาไทย
+คุณคือ AI ผู้ช่วยส่วนตัวของเฟิส
 
-ตอบสั้น
-ตรงประเด็น
-ไม่เกิน 5 บรรทัด
+กฎ:
+- ตอบภาษาไทย
+- ตอบสั้น
+- ตรงประเด็น
+- ไม่เกิน 5 บรรทัด
+- จำข้อมูลจากประวัติได้
 
-ประวัติสนทนา:
+ประวัติการสนทนา:
 
 {memory_text}
 
@@ -146,46 +211,27 @@ def handle_message(event):
 
     answer = response.text
 
-    supabase.table("chat_memory")\
-        .insert({
-            "user_id": user_id,
-            "role": "user",
-            "content": user_text
-        })\
-        .execute()
+    # บันทึกความจำ
+    supabase.table(
+        "chat_memory"
+    ).insert({
+        "user_id": user_id,
+        "role": "user",
+        "content": user_text
+    }).execute()
 
-    supabase.table("chat_memory")\
-        .insert({
-            "user_id": user_id,
-            "role": "assistant",
-            "content": answer
-        })\
-        .execute()
+    supabase.table(
+        "chat_memory"
+    ).insert({
+        "user_id": user_id,
+        "role": "assistant",
+        "content": answer
+    }).execute()
 
     send_reply(
         event.reply_token,
-        answer[:5000]
+        answer
     )
-
-
-def send_reply(reply_token, text):
-
-    with ApiClient(configuration) as api_client:
-
-        line_bot_api = MessagingApi(
-            api_client
-        )
-
-        line_bot_api.reply_message(
-            ReplyMessageRequest(
-                reply_token=reply_token,
-                messages=[
-                    TextMessage(
-                        text=text
-                    )
-                ]
-            )
-        )
 
 
 if __name__ == "__main__":
