@@ -34,7 +34,7 @@ OWNER_ID = os.getenv(
     "U8ef199c624323ece6fb023faca74d59f"
 )
 
-ALLOWED_GROUP_ID = "Cc8cda1772dbd378254a51f4371c5985d"
+allowed_groups = "Cc8cda1772dbd378254a51f4371c5985d"
 
 supabase = create_client(
     SUPABASE_URL,
